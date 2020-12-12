@@ -1,27 +1,49 @@
 import {createSlice} from '@reduxjs/toolkit';
 
-export const counterSlice = createSlice({
-  name: 'counter',
+export const orderBookSlice = createSlice({
+  name: 'orderBook',
   initialState: {
-    value: 0,
+    bids: {},
+    asks: {},
   },
   reducers: {
-    increment: (state) => {
-      // Redux Toolkit allows us to write "mutating" logic in reducers. It
-      // doesn't actually mutate the state because it uses the immer library,
-      // which detects changes to a "draft state" and produces a brand new
-      // immutable state based off those changes
-      state.value += 1;
+    setOrderBooks: (state, action) => {
+      action.payload.forEach((data) => {
+        const pp = {price: data[0], cnt: data[1], amount: data[2]};
+        const side = pp.amount >= 0 ? 'bids' : 'asks';
+        pp.amount = Math.abs(pp.amount);
+        state[`${side}`][pp.price] = pp;
+      });
     },
-    decrement: (state) => {
-      state.value -= 1;
-    },
-    incrementByAmount: (state, action) => {
-      state.value += action.payload;
+
+    updateBook: (state, action) => {
+      console.log(action.payload);
+
+      const pp = {
+        price: action.payload[0],
+        cnt: action.payload[1],
+        amount: action.payload[2],
+      };
+
+      if (!pp.cnt) {
+        if (pp.amount > 0) {
+          if (state.bids[pp.price]) {
+            delete state.bids[pp.price];
+          }
+        } else if (pp.amount < 0) {
+          if (state.asks[pp.price]) {
+            delete state.asks[pp.price];
+          }
+        }
+      } else {
+        let side = pp.amount >= 0 ? 'bids' : 'asks';
+        pp.amount = Math.abs(pp.amount);
+        state[side][pp.price] = pp;
+      }
     },
   },
 });
 
-export const {increment, decrement, incrementByAmount} = counterSlice.actions;
+export const {setOrderBooks} = orderBookSlice.actions;
 
-export default counterSlice.reducer;
+export default orderBookSlice.reducer;

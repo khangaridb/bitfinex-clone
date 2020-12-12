@@ -1,8 +1,22 @@
-import {createStore} from 'redux';
-import {persistStore, persistReducer} from 'redux-persist';
 import AsyncStorage from '@react-native-community/async-storage';
-
+import {configureStore, getDefaultMiddleware} from '@reduxjs/toolkit';
+import {
+  FLUSH,
+  PAUSE,
+  PERSIST,
+  persistReducer,
+  persistStore,
+  PURGE,
+  REGISTER,
+  REHYDRATE,
+} from 'redux-persist';
 import rootReducer from './reducers';
+
+const middleware = getDefaultMiddleware({
+  serializableCheck: {
+    ignoredActions: [FLUSH, REHYDRATE, PAUSE, PERSIST, PURGE, REGISTER],
+  },
+});
 
 const persistConfig = {
   key: 'root',
@@ -11,8 +25,11 @@ const persistConfig = {
 
 const persistedReducer = persistReducer(persistConfig, rootReducer);
 
-export default () => {
-  let store = createStore(persistedReducer);
-  let persistor = persistStore(store);
-  return {store, persistor};
-};
+const store = configureStore({
+  reducer: persistedReducer,
+  middleware,
+});
+
+let persistor = persistStore(store);
+
+export {store, persistor};
