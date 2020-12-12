@@ -38,7 +38,9 @@ const OrderBooks = (props) => {
     <ScrollView>
       <View style={{flexDirection: 'row'}}>
         <FlatList
-          data={Object.keys(bids)}
+          data={Object.keys(bids).sort(function (a, b) {
+            return b - a;
+          })}
           style={{paddingLeft: 10}}
           ListHeaderComponent={
             <TableRow
