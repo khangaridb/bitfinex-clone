@@ -7,29 +7,40 @@ import {tickerSlice} from '../../redux/reducers/tickerSlice';
 
 const TickersContainer = (props) => {
   const dispatch = useDispatch();
-  const ws = new WebSocket('wss://api-pub.bitfinex.com/ws/2');
   const [waitingToReconnect, setWaitingToReconnect] = React.useState(null);
   const [isOpen, setIsOpen] = React.useState(false);
+
+  const ws = React.useRef(null);
+
+  useFocusEffect(
+    React.useCallback(() => {
+      return () => {
+        ws.current.close();
+      };
+    }, [ws]),
+  );
 
   React.useEffect(() => {
     if (waitingToReconnect) {
       return;
     }
 
-    ws.onopen = () => {
+    ws.current = new WebSocket('wss://api-pub.bitfinex.com/ws/2');
+
+    ws.current.onopen = () => {
       const msg = JSON.stringify({
         event: 'subscribe',
         channel: 'ticker',
         symbol: 'tBTCUSD',
       });
 
-      ws.send(msg);
+      ws.current.send(msg);
       setIsOpen(true);
     };
 
-    ws.onmessage = (e) => {
+    ws.current.onmessage = (e) => {
       const data = JSON.parse(e.data);
-
+      console.log(e.data);
       if (data.event) {
         return;
       }
@@ -41,7 +52,7 @@ const TickersContainer = (props) => {
       }
     };
 
-    ws.onclose = (e) => {
+    ws.current.onclose = (e) => {
       console.log('ws closed');
       if (waitingToReconnect) {
         return;
@@ -55,17 +66,7 @@ const TickersContainer = (props) => {
         setWaitingToReconnect(null);
       }, 5000);
     };
-  }, [dispatch, ws, waitingToReconnect]);
-
-  useFocusEffect(
-    React.useCallback(() => {
-      // Do something when the screen is focused
-
-      return () => {
-        ws.close();
-      };
-    }, [ws]),
-  );
+  }, [dispatch, waitingToReconnect]);
 
   return (
     <FullHeightView>

@@ -7,17 +7,28 @@ import {useFocusEffect} from '@react-navigation/native';
 
 const OrderBooksContainer = (props) => {
   const dispatch = useDispatch();
-  const ws = new WebSocket('wss://api-pub.bitfinex.com/ws/2');
 
   const [waitingToReconnect, setWaitingToReconnect] = React.useState(null);
   const [isOpen, setIsOpen] = React.useState(false);
+
+  const ws = React.useRef(null);
+
+  useFocusEffect(
+    React.useCallback(() => {
+      return () => {
+        ws.current.close();
+      };
+    }, [ws]),
+  );
 
   React.useEffect(() => {
     if (waitingToReconnect) {
       return;
     }
 
-    ws.onopen = () => {
+    ws.current = new WebSocket('wss://api-pub.bitfinex.com/ws/2');
+
+    ws.current.onopen = () => {
       const msg = JSON.stringify({
         event: 'subscribe',
         channel: 'book',
@@ -27,16 +38,18 @@ const OrderBooksContainer = (props) => {
         len: '25',
       });
 
-      ws.send(msg);
+      ws.current.send(msg);
       setIsOpen(true);
     };
 
-    ws.onmessage = (e) => {
+    ws.current.onmessage = (e) => {
       const data = JSON.parse(e.data);
 
       if (data.event) {
         return;
       }
+
+      console.log(data);
 
       const [channelId, value] = data;
 
@@ -47,7 +60,7 @@ const OrderBooksContainer = (props) => {
       return dispatch(orderBookSlice.actions.updateBook(value));
     };
 
-    ws.onclose = (e) => {
+    ws.current.onclose = (e) => {
       console.log('ws closed');
 
       if (waitingToReconnect) {
@@ -62,16 +75,7 @@ const OrderBooksContainer = (props) => {
         setWaitingToReconnect(null);
       }, 5000);
     };
-  }, [dispatch, ws, waitingToReconnect]);
-
-  useFocusEffect(
-    React.useCallback(() => {
-      return () => {
-        console.log('about to disconnect');
-        ws.close(1);
-      };
-    }, [ws]),
-  );
+  }, [dispatch, waitingToReconnect]);
 
   return (
     <FullHeightView>
