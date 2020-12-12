@@ -47,27 +47,16 @@ const OrderBooksContainer = (props) => {
       return dispatch(orderBookSlice.actions.updateBook(value));
     };
 
-    ws.onerror = (e) => {
-      // an error occurred
-      console.log('error: ', e.message);
-    };
-
     ws.onclose = (e) => {
+      console.log('ws closed');
+
       if (waitingToReconnect) {
         return;
       }
 
-      // Parse event code and log
       setIsOpen(false);
-      console.log('ws closed');
-
-      // Setting this will trigger a re-run of the effect,
-      // cleaning up the current websocket, but not setting
-      // up a new one right away
       setWaitingToReconnect(true);
 
-      // This will trigger another re-run, and because it is false,
-      // the socket will be set up again
       setTimeout(() => {
         console.log('trying to reconnect again');
         setWaitingToReconnect(null);
@@ -78,7 +67,8 @@ const OrderBooksContainer = (props) => {
   useFocusEffect(
     React.useCallback(() => {
       return () => {
-        ws.close();
+        console.log('about to disconnect');
+        ws.close(1);
       };
     }, [ws]),
   );
