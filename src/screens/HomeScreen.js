@@ -5,9 +5,9 @@ import commonStyles from '../common/styles';
 
 const HomeScreen = (props) => {
   const menus = [
-    {label: 'Order books Widget', navigation: 'OrderBooks'},
     {label: 'Trades Widget', navigation: 'Trades'},
     {label: 'Ticker Widget', navigation: 'Tickers'},
+    {label: 'Order books Widget', navigation: 'OrderBooks'},
   ];
 
   return (

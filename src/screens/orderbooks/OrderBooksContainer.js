@@ -14,6 +14,7 @@ const OrderBooksContainer = (props) => {
       const msg = JSON.stringify({
         event: 'subscribe',
         channel: 'book',
+        precision: 'P2',
         symbol: 'tBTCUSD',
         freq: 'F1',
       });

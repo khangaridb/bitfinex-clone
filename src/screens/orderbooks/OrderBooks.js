@@ -20,7 +20,7 @@ const OrderBooks = (props) => {
     let cellValues = [value.price, value.amount];
     let textStyle = {textAlign: 'left'};
 
-    if (type === 'asks') {
+    if (type === 'bids') {
       cellValues = [value.amount, value.price];
       textStyle = {textAlign: 'right'};
     }
@@ -38,7 +38,7 @@ const OrderBooks = (props) => {
     <ScrollView>
       <View style={{flexDirection: 'row'}}>
         <FlatList
-          data={Object.keys(asks)}
+          data={Object.keys(bids)}
           style={{paddingLeft: 10}}
           ListHeaderComponent={
             <TableRow
@@ -49,12 +49,12 @@ const OrderBooks = (props) => {
               cellValues={['Total', 'Price']}
             />
           }
-          renderItem={(item) => renderItem(item, 'asks')}
+          renderItem={(item) => renderItem(item, 'bids')}
           keyExtractor={(item) => item}
         />
 
         <FlatList
-          data={Object.keys(bids)}
+          data={Object.keys(asks)}
           style={{paddingRight: 10}}
           ListHeaderComponent={
             <TableRow
@@ -63,7 +63,7 @@ const OrderBooks = (props) => {
               cellValues={['Price', 'Total']}
             />
           }
-          renderItem={(item) => renderItem(item, 'bids')}
+          renderItem={(item) => renderItem(item, 'asks')}
           keyExtractor={(item) => item}
         />
       </View>
