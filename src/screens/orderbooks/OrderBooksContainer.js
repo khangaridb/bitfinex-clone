@@ -9,18 +9,26 @@ const OrderBooksContainer = (props) => {
   const dispatch = useDispatch();
   const ws = new WebSocket('wss://api-pub.bitfinex.com/ws/2');
 
+  const [waitingToReconnect, setWaitingToReconnect] = React.useState(null);
+  const [isOpen, setIsOpen] = React.useState(false);
+
   React.useEffect(() => {
+    if (waitingToReconnect) {
+      return;
+    }
+
     ws.onopen = () => {
       const msg = JSON.stringify({
         event: 'subscribe',
         channel: 'book',
         symbol: 'tBTCUSD',
         prec: 'P0',
-        freq: 'F0',
+        freq: 'F1',
         len: '25',
       });
 
       ws.send(msg);
+      setIsOpen(true);
     };
 
     ws.onmessage = (e) => {
@@ -45,15 +53,30 @@ const OrderBooksContainer = (props) => {
     };
 
     ws.onclose = (e) => {
-      // connection closed
-      console.log('close: ', e.code, e.reason);
+      if (waitingToReconnect) {
+        return;
+      }
+
+      // Parse event code and log
+      setIsOpen(false);
+      console.log('ws closed');
+
+      // Setting this will trigger a re-run of the effect,
+      // cleaning up the current websocket, but not setting
+      // up a new one right away
+      setWaitingToReconnect(true);
+
+      // This will trigger another re-run, and because it is false,
+      // the socket will be set up again
+      setTimeout(() => {
+        console.log('trying to reconnect again');
+        setWaitingToReconnect(null);
+      }, 5000);
     };
-  }, [dispatch, ws]);
+  }, [dispatch, ws, waitingToReconnect]);
 
   useFocusEffect(
     React.useCallback(() => {
-      // Do something when the screen is focused
-
       return () => {
         ws.close();
       };
@@ -62,7 +85,7 @@ const OrderBooksContainer = (props) => {
 
   return (
     <FullHeightView>
-      <Header navigation={props.navigation} />
+      <Header navigation={props.navigation} webSocketStatus={isOpen} />
 
       <OrderBooks {...props} />
     </FullHeightView>

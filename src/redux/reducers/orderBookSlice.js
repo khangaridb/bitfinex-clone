@@ -22,11 +22,13 @@ export const orderBookSlice = createSlice({
     },
 
     updateBook: (state, action) => {
+      console.log(action.payload);
       const pp = {
         price: action.payload[0],
         cnt: action.payload[1],
         amount: action.payload[2],
       };
+
       if (!pp.cnt) {
         if (pp.amount > 0) {
           if (state.bids[pp.price]) {

@@ -6,7 +6,6 @@ import {FullHeightView} from '../../common/components';
 const Tickers = () => {
   const tickers = useSelector((state) => state.ticker);
 
-  console.log('component: ', tickers);
   return (
     <FullHeightView>
       <View style={styles.container}>
